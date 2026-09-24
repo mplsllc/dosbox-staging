@@ -55,6 +55,9 @@ void CAPTURE_AddMidiData(const bool sysex, const size_t len, const uint8_t* data
 void CAPTURE_StartVideoCapture();
 void CAPTURE_StopVideoCapture();
 
+bool CAPTURE_StartAudioCapture();
+bool CAPTURE_StopAudioCapture();
+
 bool CAPTURE_IsCapturingAudio();
 bool CAPTURE_IsCapturingImage();
 bool CAPTURE_IsCapturingPostRenderImage();

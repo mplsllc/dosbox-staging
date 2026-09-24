@@ -7,6 +7,7 @@
 #include "private/dos.h"
 #include "private/dosbox.h"
 #include "private/memory.h"
+#include "private/capture.h"
 
 #include <set>
 #include <string>
@@ -68,6 +69,10 @@ static void setup_api_handlers()
 	server.Get("/api/v1/memory/:segment/:offset/:len", ReadMemoryCommand::Get);
 	server.Put("/api/v1/memory/:offset", WriteMemoryCommand::Put);
 	server.Put("/api/v1/memory/:segment/:offset", WriteMemoryCommand::Put);
+
+	server.Get("/api/v1/capture/status", CaptureStatusCommand::Get);
+	server.Post("/api/v1/capture/audio/start", StartAudioCaptureCommand::Post);
+	server.Post("/api/v1/capture/audio/stop", StopAudioCaptureCommand::Post);
 }
 
 static std::string strip_port(const std::string& host)

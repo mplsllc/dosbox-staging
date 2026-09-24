@@ -465,17 +465,15 @@ void CAPTURE_AddMidiData(const bool sysex, const size_t len, const uint8_t* data
 	capture_midi_add_data(sysex, len, data);
 }
 
-static void handle_capture_audio_event(bool pressed)
+bool CAPTURE_StartAudioCapture()
 {
-	// Ignore key-release events
-	if (!pressed) {
-		return;
-	}
-
 	switch (capture.state.audio) {
 	case CaptureState::Off:
-		// See `CAPTURE_StartVideoCapture()` for why we clear the queue
-		// only when no other capture stream is already keeping it active.
+		// Audio and video share the mixer's capture queue. If neither is
+		// currently capturing, drop any stale samples left behind by the
+		// previous session before flipping to `Pending`; `mix_samples()`
+		// still sees `Off` here and won't enqueue fresh samples that the
+		// clear would wipe.
 		//
 		if (capture.state.video == CaptureState::Off) {
 			MIXER_ClearCaptureQueue();
@@ -485,21 +483,51 @@ static void handle_capture_audio_event(bool pressed)
 			LOG_MSG("CAPTURE: Preparing to capture audio output; "
 			        "capturing will start with the next audio frame");
 		}
-		break;
+		return true;
+
+	case CaptureState::Pending:
+	case CaptureState::InProgress:
+		LOG_WARNING("CAPTURE: Already capturing audio output");
+		return false;
+	}
+	return false;
+}
+
+bool CAPTURE_StopAudioCapture()
+{
+	switch (capture.state.audio) {
+	case CaptureState::Off:
+		LOG_WARNING("CAPTURE: Not capturing audio output");
+		return false;
 
 	case CaptureState::Pending:
 		capture.state.audio = CaptureState::Off;
-
+		TITLEBAR_NotifyAudioCaptureStatus(false);
 		LOG_MSG("CAPTURE: Stopped capturing audio output "
 		        "(no audio was written)");
-		break;
+		return true;
 
 	case CaptureState::InProgress:
 		capture_audio_finalise();
 		capture.state.audio = CaptureState::Off;
-
+		TITLEBAR_NotifyAudioCaptureStatus(false);
 		LOG_MSG("CAPTURE: Stopped capturing audio output");
-		break;
+		return true;
+	}
+	return false;
+}
+
+static void handle_capture_audio_event(bool pressed)
+{
+	// Ignore key-release events
+	if (!pressed) {
+		return;
+	}
+
+	if (CAPTURE_IsCapturingAudio()) {
+		CAPTURE_StopAudioCapture();
+	} else {
+		CAPTURE_StartAudioCapture();
 	}
 }
 
