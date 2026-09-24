@@ -517,6 +517,15 @@ bool CAPTURE_StopAudioCapture()
 	return false;
 }
 
+bool CAPTURE_TakeScreenshot()
+{
+	if (image_capturer) {
+		image_capturer->RequestGroupedCapture();
+		return true;
+	}
+	return false;
+}
+
 static void handle_capture_audio_event(bool pressed)
 {
 	// Ignore key-release events

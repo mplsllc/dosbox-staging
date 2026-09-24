@@ -74,6 +74,7 @@ static void setup_api_handlers()
 	server.Get("/api/v1/capture/status", CaptureStatusCommand::Get);
 	server.Post("/api/v1/capture/audio/start", StartAudioCaptureCommand::Post);
 	server.Post("/api/v1/capture/audio/stop", StopAudioCaptureCommand::Post);
+	server.Post("/api/v1/capture/screenshot", TakeScreenshotCommand::Post);
 
 	server.Get("/api/v1/input/mouse", MouseStatusCommand::Get);
 	server.Post("/api/v1/input/mouse/move", MouseMoveCommand::Post);

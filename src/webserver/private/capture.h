@@ -37,6 +37,14 @@ public:
 	static void Post(const httplib::Request& req, httplib::Response& res);
 };
 
+class TakeScreenshotCommand : public Command {
+public:
+	bool success = false;
+
+	void Execute() override;
+	static void Post(const httplib::Request& req, httplib::Response& res);
+};
+
 } // namespace Webserver
 
 #endif // DOSBOX_WEBSERVER_CAPTURE_H

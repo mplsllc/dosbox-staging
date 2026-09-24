@@ -66,4 +66,20 @@ void StopAudioCaptureCommand::Post(const httplib::Request&, httplib::Response& r
 	send_json(res, j);
 }
 
+void TakeScreenshotCommand::Execute()
+{
+	success = CAPTURE_TakeScreenshot();
+	LOG_DEBUG("API: TakeScreenshotCommand(success=%d)", success);
+}
+
+void TakeScreenshotCommand::Post(const httplib::Request&, httplib::Response& res)
+{
+	TakeScreenshotCommand cmd;
+	cmd.WaitForCompletion();
+
+	json j;
+	j["success"] = cmd.success;
+	send_json(res, j);
+}
+
 } // namespace Webserver

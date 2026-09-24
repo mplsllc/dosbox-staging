@@ -57,6 +57,7 @@ void CAPTURE_StopVideoCapture();
 
 bool CAPTURE_StartAudioCapture();
 bool CAPTURE_StopAudioCapture();
+bool CAPTURE_TakeScreenshot();
 
 bool CAPTURE_IsCapturingAudio();
 bool CAPTURE_IsCapturingImage();
