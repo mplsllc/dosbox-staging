@@ -8,6 +8,7 @@ add_executable(dosbox_tests
     bitops_tests.cpp
     cmd_move_tests.cpp
     capture_control_tests.cpp
+    mouse_control_tests.cpp
     dos_files_tests.cpp
     dos_memory_struct_tests.cpp
     dosbox_pause_fsm_tests.cpp

@@ -8,6 +8,7 @@
 #include "private/dosbox.h"
 #include "private/memory.h"
 #include "private/capture.h"
+#include "private/mouse.h"
 
 #include <set>
 #include <string>
@@ -73,6 +74,10 @@ static void setup_api_handlers()
 	server.Get("/api/v1/capture/status", CaptureStatusCommand::Get);
 	server.Post("/api/v1/capture/audio/start", StartAudioCaptureCommand::Post);
 	server.Post("/api/v1/capture/audio/stop", StopAudioCaptureCommand::Post);
+
+	server.Get("/api/v1/input/mouse", MouseStatusCommand::Get);
+	server.Post("/api/v1/input/mouse/move", MouseMoveCommand::Post);
+	server.Post("/api/v1/input/mouse/button", MouseButtonCommand::Post);
 }
 
 static std::string strip_port(const std::string& host)

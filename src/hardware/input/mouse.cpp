@@ -714,6 +714,122 @@ void MOUSE_EventWheel(const int16_t w_rel, const MouseInterfaceId interface_id)
 }
 
 // ***************************************************************************
+// Synthetic input injection (e.g. via REST API or scripting)
+// ***************************************************************************
+
+MousePosition MOUSE_GetPosition()
+{
+	MousePosition pos = {};
+	pos.x_abs         = state.cursor_x_abs;
+	pos.y_abs         = state.cursor_y_abs;
+	pos.resolution_x  = (mouse_shared.resolution_x > 1) ? mouse_shared.resolution_x : 640;
+	pos.resolution_y  = (mouse_shared.resolution_y > 1) ? mouse_shared.resolution_y : 400;
+
+	const float span_x = static_cast<float>(pos.resolution_x - 1);
+	const float span_y = static_cast<float>(pos.resolution_y - 1);
+
+	pos.x_norm = (span_x > 0.0f) ? std::clamp(state.cursor_x_abs / span_x, 0.0f, 1.0f) : 0.0f;
+	pos.y_norm = (span_y > 0.0f) ? std::clamp(state.cursor_y_abs / span_y, 0.0f, 1.0f) : 0.0f;
+
+	return pos;
+}
+
+void MOUSE_SyntheticMoved(const float x, const float y, const bool is_normalized)
+{
+	if (DOSBOX_IsPaused()) {
+		return;
+	}
+
+	const uint32_t res_x = (mouse_shared.resolution_x > 1) ? mouse_shared.resolution_x : 640;
+	const uint32_t res_y = (mouse_shared.resolution_y > 1) ? mouse_shared.resolution_y : 400;
+
+	const float span_x = static_cast<float>(res_x - 1);
+	const float span_y = static_cast<float>(res_y - 1);
+
+	float abs_x = 0.0f;
+	float abs_y = 0.0f;
+
+	if (is_normalized) {
+		abs_x = std::clamp(x, 0.0f, 1.0f) * span_x;
+		abs_y = std::clamp(y, 0.0f, 1.0f) * span_y;
+	} else {
+		abs_x = std::clamp(x, 0.0f, span_x);
+		abs_y = std::clamp(y, 0.0f, span_y);
+	}
+
+	const float rel_x = abs_x - state.cursor_x_abs;
+	const float rel_y = abs_y - state.cursor_y_abs;
+
+	state.cursor_x_abs      = abs_x;
+	state.cursor_y_abs      = abs_y;
+	state.cursor_is_outside = false;
+
+	if (mouse_shared.started) {
+		const float x_scaled = rel_x * mouse_config.sensitivity_coeff_x;
+		const float y_scaled = rel_y * mouse_config.sensitivity_coeff_y;
+
+		for (const auto interface_id : AllMouseInterfaceIds) {
+			auto& interface = MouseInterface::GetInstance(interface_id);
+			if (interface.IsUsingHostPointer()) {
+				interface.NotifyMoved(x_scaled,
+				                      y_scaled,
+				                      state.cursor_x_abs,
+				                      state.cursor_y_abs);
+			}
+		}
+	}
+}
+
+void MOUSE_SyntheticRelativeMoved(const float rel_x, const float rel_y)
+{
+	if (DOSBOX_IsPaused()) {
+		return;
+	}
+
+	const uint32_t res_x = (mouse_shared.resolution_x > 1) ? mouse_shared.resolution_x : 640;
+	const uint32_t res_y = (mouse_shared.resolution_y > 1) ? mouse_shared.resolution_y : 400;
+
+	const float span_x = static_cast<float>(res_x - 1);
+	const float span_y = static_cast<float>(res_y - 1);
+
+	const float abs_x = std::clamp(state.cursor_x_abs + rel_x, 0.0f, span_x);
+	const float abs_y = std::clamp(state.cursor_y_abs + rel_y, 0.0f, span_y);
+
+	state.cursor_x_abs      = abs_x;
+	state.cursor_y_abs      = abs_y;
+	state.cursor_is_outside = false;
+
+	if (mouse_shared.started) {
+		const float x_scaled = rel_x * mouse_config.sensitivity_coeff_x;
+		const float y_scaled = rel_y * mouse_config.sensitivity_coeff_y;
+
+		for (const auto interface_id : AllMouseInterfaceIds) {
+			auto& interface = MouseInterface::GetInstance(interface_id);
+			if (interface.IsUsingHostPointer()) {
+				interface.NotifyMoved(x_scaled,
+				                      y_scaled,
+				                      state.cursor_x_abs,
+				                      state.cursor_y_abs);
+			}
+		}
+	}
+}
+
+void MOUSE_SyntheticButton(const MouseButtonId button_id, const bool pressed)
+{
+	if (!mouse_shared.started || DOSBOX_IsPaused()) {
+		return;
+	}
+
+	for (const auto interface_id : AllMouseInterfaceIds) {
+		auto& interface = MouseInterface::GetInstance(interface_id);
+		if (interface.IsUsingHostPointer()) {
+			interface.NotifyButton(button_id, pressed);
+		}
+	}
+}
+
+// ***************************************************************************
 // MOUSECTL.COM / GUI configurator interface
 // ***************************************************************************
 

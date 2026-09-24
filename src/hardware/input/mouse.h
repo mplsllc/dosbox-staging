@@ -92,6 +92,22 @@ void MOUSE_EventButton(const MouseButtonId button_id, const bool pressed,
 void MOUSE_EventWheel(const float w_rel);
 void MOUSE_EventWheel(const int16_t w_rel, const MouseInterfaceId device_id);
 
+// Synthetic input injection (e.g. via REST API or scripting)
+// Injects directly to guest mouse interfaces without host window focus checks.
+struct MousePosition {
+	float x_abs = 0.0f;
+	float y_abs = 0.0f;
+	float x_norm = 0.0f;
+	float y_norm = 0.0f;
+	uint32_t resolution_x = 0;
+	uint32_t resolution_y = 0;
+};
+
+MousePosition MOUSE_GetPosition();
+void MOUSE_SyntheticMoved(const float x, const float y, const bool is_normalized = true);
+void MOUSE_SyntheticRelativeMoved(const float rel_x, const float rel_y);
+void MOUSE_SyntheticButton(const MouseButtonId button_id, const bool pressed);
+
 // Notify that guest OS is being booted, so that certain
 // parts of the emulation (like DOS driver) should be disabled
 void MOUSE_NotifyBooting();
