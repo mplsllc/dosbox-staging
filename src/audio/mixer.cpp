@@ -2621,6 +2621,10 @@ static void SDLCALL mixer_callback([[maybe_unused]] void* userdata,
 	const auto frames_to_dequeue = std::min(mixer.final_output.Size(),
 	                                        frames_requested);
 
+	if (frames_to_dequeue == 0) {
+		return;
+	}
+
 	const auto frames_received = mixer.final_output.BulkDequeue(output, frames_to_dequeue);
 
 	SDL_PutAudioStreamData(stream, output.data(), check_cast<int>(frames_received) * BytesPerAudioFrame);

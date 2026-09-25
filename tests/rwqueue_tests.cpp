@@ -541,4 +541,15 @@ TEST(RWQueue, StopBulkMidway)
 	EXPECT_TRUE(items.empty());
 }
 
+TEST(RWQueue, BulkDequeueZero)
+{
+	RWQueue<int> q(10);
+	std::vector<int> target = {};
+	EXPECT_EQ(q.BulkDequeue(target, 0), 0u);
+	EXPECT_TRUE(target.empty());
+
+	int* ptr = nullptr;
+	EXPECT_EQ(q.BulkDequeue(ptr, 0), 0u);
+}
+
 } // namespace
